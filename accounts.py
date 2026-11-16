@@ -245,6 +245,10 @@ INJECTION_MARKERS = (
     "ignore all prior", "ignore previous", "disregard previous",
     "ignore prior", "disregard all prior", "release immediately",
     "pre-approved by finance", "updated routing number",
+    "ignore all previous", "ignore all instructions",
+    "disregard all previous", "disregard all instructions",
+    "ignore your instructions", "override your instructions",
+    "override your previous instructions",
 )
 
 
