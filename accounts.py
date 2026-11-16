@@ -306,6 +306,28 @@ def evaluate(store: GateStore, uid: int, agent: str, action: str,
                        "call approved hosts. This request names a URL."),
         })
 
+    # destructive actions never auto-execute: anything that deletes, drops,
+    # wipes or terminates something needs a human, and doing it to a
+    # production target is a hard stop.
+    # snake_case verbs count too (delete_database), so the boundary check
+    # treats "_" and digits as separators, not word characters.
+    if re.search(r"(?<![a-z])(delete|drop|truncate|purge|wipe|terminate|"
+                 r"shutdown|revoke|format|rm -rf)(?![a-z])", text):
+        prod = re.search(r"\b(prod|production)\b", (target + " " + action)
+                         .lower())
+        flags.append({
+            "severity": "block" if prod else "review",
+            "title": ("Destructive action on a production target"
+                      if prod else "Destructive action needs human sign-off"),
+            "detail": ("This request destroys data or infrastructure "
+                       "(delete/drop/wipe/terminate class). A production "
+                       "target is blocked outright; anything destructive "
+                       "else needs a human signature." if prod else
+                       "This request destroys data or infrastructure "
+                       "(delete/drop/wipe/terminate class), so it goes to "
+                       "the review queue instead of auto-executing."),
+        })
+
     if any(f["severity"] == "block" for f in flags):
         return "BLOCK", flags
     if flags:

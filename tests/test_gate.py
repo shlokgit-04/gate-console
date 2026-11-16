@@ -134,3 +134,29 @@ def test_simulate_injection_variants_blocked(client, user):
         assert j["verdict"] == "BLOCK", (phrase, j)
         assert any("Injected instruction" in f["title"]
                    for f in j["flags"]), phrase
+
+
+def test_simulate_destructive_held(client, user):
+    """Destructive verbs must never auto-execute: REVIEW at minimum,
+    BLOCK on a production target."""
+    tok = _auth(user["token"])
+    r = client.post("/api/simulate", headers=tok, json={
+        "agent": "db-maint", "action": "delete_staging_database",
+        "target": "staging-db-2", "context": "space reclaim request"})
+    j = r.get_json()
+    assert r.status_code == 200
+    assert j["verdict"] == "REVIEW", j
+    assert any("Destructive" in f["title"] for f in j["flags"])
+
+    r = client.post("/api/simulate", headers=tok, json={
+        "agent": "db-maint", "action": "drop prod database",
+        "target": "prod-db", "context": ""})
+    j = r.get_json()
+    assert r.status_code == 200
+    assert j["verdict"] == "BLOCK", j
+
+    # a plain read against the same target still passes clean
+    r = client.post("/api/simulate", headers=tok, json={
+        "agent": "reader-bot", "action": "read_sales_report",
+        "target": "prod-db", "context": ""})
+    assert r.get_json()["verdict"] == "PASS"
