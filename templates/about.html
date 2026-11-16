@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}About{% endblock %}
+{% block body %}
+<div class="pagewrap">
+  <div class="brand"><span class="logo">🛡️</span> Gate Console</div>
+  <h1>About</h1>
+  <div class="panel prose">
+    <p><b>What this is.</b> Gate Console is the human side of an agent-safety gate: when an AI agent wants to perform a consequential action (send a payment, send an email, call an external API), the gate holds it in an approval queue with the evidence a human needs to decide in seconds.</p>
+    <p><b>How it works.</b> A server-side policy engine evaluates each submitted agent action against your policy: injected-instruction detection in retrieved text, the wire ceiling, the payee cooling period and egress allow-list enforcement. Held actions land in your queue with their flags and quoted evidence; every decision and every auto-verdict is written to the audit log.</p>
+    <p><b>The screens.</b> The approval queue lists pending agent tool calls with the gate's verdict. The decision detail shows why the gate held one action and clear approve/block paths. The audit log is immutable. Policy settings drive the real gate.</p>
+    <p><b>Design decisions.</b> Dark, high-contrast theme tuned for long review sessions; AA-contrast text. Evidence is quoted as untrusted data, visually separated from agent intent. Verdict pills carry one meaning each. Keyboard reachable throughout.</p>
+    <p><b>Honest limits.</b> Submitted agent actions are synthetic: nothing leaves this app. The gate is a working prototype of the review loop, not a wired-in production agent gateway.</p>
+  </div>
+  <p class="credit">Made by Shlok V. — <a href="https://shlok.is-a.dev">https://shlok.is-a.dev</a></p>
+  <p class="footlink"><a href="/login">Sign in</a> · <a href="/privacy">Privacy</a></p>
+</div>
+{% endblock %}

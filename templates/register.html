@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Create account{% endblock %}
+{% block body %}
+<div class="authwrap">
+  <div class="authcard">
+    <div class="brand"><span class="logo">🛡️</span> Gate Console</div>
+    <h1>Create account</h1>
+    <p class="sub">Your queue, audit log and policy are private to your account.</p>
+    <form id="regform">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" required autocomplete="email">
+      <label for="password">Password (8+ characters)</label>
+      <input id="password" name="password" type="password" required minlength="8" autocomplete="new-password">
+      <button class="btn wide" type="submit">Create account</button>
+      <p class="err" id="err" role="alert"></p>
+      <p class="sub center">Already registered? <a href="/login">Sign in</a></p>
+    </form>
+  </div>
+  <p class="footlink"><a href="/privacy">Privacy</a> · <a href="/about">About</a></p>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='auth.js') }}" data-mode="register"></script>{% endblock %}

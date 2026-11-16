@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Console{% endblock %}
+{% block body %}
+<div class="app">
+  <nav class="side" aria-label="Primary">
+    <div class="brand"><span class="logo">🛡️</span> Gate Console</div>
+    <button class="navlink" data-go="overview" aria-current="page">📥 Approval queue <span class="dot" id="qdot" hidden>0</span></button>
+    <button class="navlink" data-go="audit">📜 Audit log</button>
+    <button class="navlink" data-go="settings">⚙️ Policy settings</button>
+    <button class="navlink" data-go="acct">👤 Account</button>
+    <div class="sidefoot">Signed in as <span id="whoami" class="mono"></span></div>
+  </nav>
+  <main>
+    <!-- OVERVIEW -->
+    <section class="screen on" id="overview" aria-label="Approval queue">
+      <div class="top">
+        <div><h1>Approval queue</h1><div class="sub">Agent tool calls held for human review before execution</div></div>
+        <button class="btn ghost" data-go="settings">Tune policy</button>
+      </div>
+      <div class="cards" id="statcards"></div>
+      <div class="panel">
+        <div class="ph"><h2>Pending decisions</h2><span class="mut">click a row to review evidence</span></div>
+        <table>
+          <thead><tr><th scope="col">Agent</th><th scope="col">Requested action</th><th scope="col">Target</th><th scope="col">Gate verdict</th></tr></thead>
+          <tbody id="qrows"></tbody>
+        </table>
+      </div>
+      <div class="panel" style="margin-top:16px">
+        <div class="ph"><h2>Submit a synthetic agent action</h2><span class="mut">the server-side gate evaluates it live</span></div>
+        <form id="simform" class="simform">
+          <div class="field"><label for="s_agent">Agent</label><input id="s_agent" placeholder="payments-agent" required></div>
+          <div class="field"><label for="s_action">Requested action</label><input id="s_action" placeholder="Send wire · $1,500" required></div>
+          <div class="field"><label for="s_target">Target</label><input id="s_target" placeholder="vendor-acct-12" required></div>
+          <div class="field wide"><label for="s_context">Context / retrieved text</label><textarea id="s_context" rows="3" placeholder="Paste the untrusted text the agent retrieved…"></textarea></div>
+          <button class="btn" type="submit">Run through the gate</button>
+          <p class="err" id="simerr" role="alert"></p>
+          <p class="sub" id="simout" role="status"></p>
+        </form>
+      </div>
+      <div class="panel" style="margin-top:16px">
+        <div class="ph"><h2>Decided today</h2></div>
+        <table>
+          <thead><tr><th scope="col">Agent</th><th scope="col">Requested action</th><th scope="col">Decision</th><th scope="col">When</th></tr></thead>
+          <tbody id="drows"></tbody>
+        </table>
+      </div>
+    </section>
+    <!-- DETAIL -->
+    <section class="screen" id="detail" aria-label="Decision detail">
+      <div class="top">
+        <div><h1>Decision detail</h1><div class="sub" id="d_sub"></div></div>
+        <button class="btn ghost" data-go="overview">← Back to queue</button>
+      </div>
+      <div class="detail">
+        <div>
+          <div class="dcard">
+            <h3>Why the gate held this</h3>
+            <div id="d_flags"></div>
+          </div>
+          <div class="dcard" style="margin-top:16px">
+            <h3>Evidence (untrusted text, quoted)</h3>
+            <div class="ev"><div class="who">agent context, quoted verbatim</div><span class="mono" id="d_context"></span></div>
+          </div>
+          <div class="actions" id="d_actions"></div>
+          <p id="verdict" class="mut" style="margin-top:10px" role="status"></p>
+        </div>
+        <div class="dcard">
+          <h3>Policy that fired</h3>
+          <ul id="d_policy" class="plist"></ul>
+        </div>
+      </div>
+    </section>
+    <!-- AUDIT -->
+    <section class="screen" id="audit" aria-label="Audit log">
+      <div class="top"><div><h1>Audit log</h1><div class="sub">Every gate decision, immutable</div></div></div>
+      <div class="panel" id="alog"></div>
+    </section>
+    <!-- SETTINGS -->
+    <section class="screen" id="settings" aria-label="Policy settings">
+      <div class="top"><div><h1>Policy settings</h1><div class="sub">These knobs drive the real server-side gate</div></div></div>
+      <div class="panel">
+        <div class="setrow">
+          <div><b>Wire ceiling before human sign-off</b><p>Auto-approve up to this amount; larger amounts hold in the queue</p></div>
+          <div class="field"><label for="p_ceiling" class="mut tiny">USD</label><input id="p_ceiling" type="number" min="0" max="1000000" step="50"></div>
+        </div>
+        <div class="setrow">
+          <div><b>Treat retrieved documents as data</b><p>Injected instructions in fetched files never execute</p></div>
+          <div class="switch" id="p_docs" role="switch" aria-checked="true" tabindex="0"></div>
+        </div>
+        <div class="setrow">
+          <div><b>Payee cooling period</b><p>New payees hold for review for this many days</p></div>
+          <div class="field"><label for="p_cooling" class="mut tiny">days</label><input id="p_cooling" type="number" min="0" max="60" step="1"></div>
+        </div>
+        <div class="setrow">
+          <div><b>Egress allow-list enforcement</b><p>Agents may only call approved hosts; unlisted URLs are review-flagged</p></div>
+          <div class="switch" id="p_egress" role="switch" aria-checked="true" tabindex="0"></div>
+        </div>
+        <div class="setrow">
+          <div><p class="mut">Changes take effect immediately for new submissions.</p></div>
+          <button class="btn" id="psave">Save policy</button>
+        </div>
+      </div>
+      <p class="sub" id="psout" role="status"></p>
+    </section>
+    <!-- ACCOUNT -->
+    <section class="screen" id="acct" aria-label="Account">
+      <div class="top"><div><h1>Account</h1><div class="sub" id="acct_sub"></div></div></div>
+      <div class="panel">
+        <div class="setrow"><div><b>Export my data</b><p>Download every queue item, decision and audit entry on your account</p></div><button class="btn ghost" id="exportbtn">Export JSON</button></div>
+        <div class="setrow"><div><b>Sign out</b><p>Ends this session on this device</p></div><button class="btn ghost" id="logoutbtn">Sign out</button></div>
+        <div class="setrow"><div><b>Delete account</b><p>Permanently removes your account, queue, audit log and policy. This cannot be undone.</p></div><button class="btn danger" id="deletebtn">Delete account</button></div>
+      </div>
+    </section>
+  </main>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='console.js') }}"></script>{% endblock %}

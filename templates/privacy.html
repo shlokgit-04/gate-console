@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Privacy{% endblock %}
+{% block body %}
+<div class="pagewrap">
+  <div class="brand"><span class="logo">🛡️</span> Gate Console</div>
+  <h1>Privacy policy</h1>
+  <p class="sub">Last updated November 16, 2026</p>
+  <div class="panel prose">
+    <p><b>What we collect.</b> When you create an account we store your email address and a salted, hashed form of your password (werkzeug pbkdf2). We never store your password in plain text.</p>
+    <p><b>Your gate data.</b> The agent actions in your approval queue, your decisions, the audit log entries and your policy settings are stored in our database and are visible only to your account. Everything on your account is scoped to you.</p>
+    <p><b>Session tokens.</b> After sign-in we keep a signed session token in your browser's local storage for up to 30 days. You can end it any time with Sign out, and deleting your account invalidates all tokens.</p>
+    <p><b>Demo data.</b> The seeded queue items, agents and evidence on a new account are synthetic examples. No real payments, inboxes, or agents are involved anywhere in this app.</p>
+    <p><b>Export and deletion.</b> On the Account screen you can export everything on your account as JSON at any time, or delete your account. Deleting your account permanently removes your queue, audit log, policy and profile. This cannot be undone.</p>
+    <p><b>Cookies and analytics.</b> This site sets no tracking cookies and runs no analytics.</p>
+    <p><b>Contact.</b> Questions about this policy: contact the site owner via the About page.</p>
+  </div>
+  <p class="footlink"><a href="/login">Sign in</a> · <a href="/about">About</a></p>
+</div>
+{% endblock %}
